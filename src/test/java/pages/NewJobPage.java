@@ -13,6 +13,9 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 public class NewJobPage {
     private final WebDriverWait wait;
+
+    private static final By HEADER_1 = By.xpath("//h4[. = '1']");
+    private static final By HEADER_3 = By.xpath("//h4[. = '3']");
     private static final By NEW_CUSTOMER_BUTTON = By.xpath("//button/span[. ='+ New customer']");
     private static final By NEW_ITEM_NAME_FIELD = By.xpath("//input[@id = 'item-name']");
     private static final By UNIT_QTY_FIELD = By.xpath("//input[@id = 'qty']");
@@ -25,12 +28,14 @@ public class NewJobPage {
     }
 
     public void createNewCustomer(String firstName, String lastName) {
+        wait.until(elementToBeClickable(HEADER_1)).click();
         wait.until(elementToBeClickable(NEW_CUSTOMER_BUTTON)).click();
         val newCustomerDialog = new NewCustomerDialog();
         newCustomerDialog.createCustomer(firstName, lastName);
     }
 
     public void addLineItem(String itemName, String unitQty, String unitPrice) {
+        wait.until(elementToBeClickable(HEADER_3)).click();
         wait.until(visibilityOfElementLocated(NEW_ITEM_NAME_FIELD)).sendKeys(itemName);
         val unitQtyField = wait.until(visibilityOfElementLocated(UNIT_QTY_FIELD));
         unitQtyField.sendKeys(Keys.chord(Keys.CONTROL, "a"), unitQty);
