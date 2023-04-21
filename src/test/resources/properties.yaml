@@ -1,7 +1,7 @@
 url: https://pro.housecallpro.com/pro/log_in
 credentials:
-  username: dmitriy.naydenov@gmail.com
-  password: VGVzdFBAc3N3MHJkXzEyMw==
+  username: [username]
+  password: [password]
 browser:
   name: Chrome
   headless: false
