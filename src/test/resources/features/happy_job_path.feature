@@ -7,3 +7,4 @@ Feature: User creates new job
       | unit qty     | 2.00              |
       | unit price   | 100.00            |
       | private note | Private test note |
+    Then the job is created

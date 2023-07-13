@@ -17,14 +17,17 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.devtools.v111.network.Network;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.PrintWriter;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Optional;
 
 @Slf4j
 public class Hooks {
@@ -33,11 +36,14 @@ public class Hooks {
     @Getter
     private static WebDriver driver;
 
+    private PrintWriter out;
+
     public Hooks(ConfigManager configManager) {
         this.config = configManager.create();
     }
 
     @Before
+    @SneakyThrows
     public void beforeTest() {
         switch (config.getBrowser().getName()) {
             case "Chrome" -> {
@@ -47,8 +53,22 @@ public class Hooks {
                 if (config.getBrowser().getHeadless().equals("true")) {
                     options.addArguments("--headless");
                 }
+
                 driver = new ChromeDriver(options);
+
+                out = new PrintWriter("network.txt");
+                val devTools = ((ChromeDriver) driver).getDevTools();
+                devTools.createSession();
+                devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
+                devTools.addListener(Network.requestWillBeSent(),
+                        request -> {
+                            if (request.getRequest().getUrl().contains("alpha/jobs") && request.getRequest().getMethod().equals("POST"))
+                                System.out.println("URL:" + request.getRequest().getUrl() + " METHOD: " + request.getRequest().getMethod() + " PAYLOAD: " + request.getRequest().getPostData());
+                            out.println("URL:" + request.getRequest().getUrl() + " METHOD: " + request.getRequest().getMethod() + " PAYLOAD: " + request.getRequest().getPostData());
+                        }
+                );
             }
+
             case "Edge" -> {
                 log.info("Setting up Edge driver...");
                 WebDriverManager.edgedriver().setup();
@@ -56,6 +76,7 @@ public class Hooks {
                 if (config.getBrowser().getHeadless().equals("true")) {
                     options.addArguments("--headless");
                 }
+
                 driver = new EdgeDriver(options);
             }
             default -> throw new IllegalArgumentException("Supported browsers are Chrome or Edge");
@@ -83,6 +104,7 @@ public class Hooks {
 
     @After(order = 0)
     public void quitDriver() {
+        out.close();
         driver.quit();
     }
 }

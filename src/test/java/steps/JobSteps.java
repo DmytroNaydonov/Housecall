@@ -2,6 +2,7 @@ package steps;
 
 import config.TestConfig;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.val;
 import manager.ConfigManager;
@@ -47,11 +48,15 @@ public class JobSteps {
         val faker = new Faker();
         val firstName = faker.name().firstName();
         val lastName = faker.name().lastName();
-        newJobPage.createNewCustomer(firstName, lastName);
         val itemName = params.get("item name") + "_" + randomAlphabetic(5);
         newJobPage.addLineItem(itemName, params.get("unit qty"), params.get("unit price"));
         newJobPage.addPrivateNote(params.get("private note"));
+        newJobPage.createNewCustomer(firstName, lastName);
         newJobPage.saveNewJob();
+    }
+
+    @Then("the job is created")
+    public void theJobIsCreated() {
         val jobPage = new JobPage(driver);
         val createdJobs = jobPage.getActivityFeedItemText().stream().filter(i -> i.contains("Job created")).toList();
         assertThat("There were no Activity feed items with 'Job created' text", createdJobs, is(not(empty())));
